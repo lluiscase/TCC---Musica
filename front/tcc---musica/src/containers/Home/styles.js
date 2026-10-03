@@ -14,7 +14,7 @@ export const Cabecalho = styled.header`
 export const Icone = styled.img`
     position: absolute;
     left: 1.5rem;
-    top: 1.5rem;
+    top: 1.7rem;
     transform: translateY(-50%);
     width: 2rem;
 `
@@ -46,16 +46,50 @@ export const Titulo2= styled.h2`
     margin-top: 1rem;
 `
 export const Descricao = styled.p`
-    color: #FFFFFF;
+    color: #A1A1AA;
     font-size: 1.2rem;
     display: flex;
     justify-content: center;
     margin-top: 1rem;
+    height: 3rem;
 `
+
+export const Destaque = styled.section`
+    margin: 2rem auto;
+    max-width: 50rem;
+    border-radius: 1.5rem;
+    height: 26rem;
+    background-color: #242429;
+`
+
 export const Icone2 = styled.img`
-    position: fixed;
-    left: 50%;
-    top: 60%;
-    transform: translate(-50%, -50%);
-    max-width: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 85%;
+    max-width: 100%;
+    margin-top: 1.5rem;
+`
+
+export const Caixa = styled.div`
+    flex: 1;
+    padding: 2.5rem;
+    margin: 0 47rem;
+    background-color: #242429;
+    border-radius: 1.5rem;
+    text-align: center;
+`
+
+export const Container = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: auto;
+    flex: 1;
+`
+export const IconeAssistente = styled.img`
+    display: fixed;
+    margin: 1rem 2rem 3 rem 2rem;
+    width: 15%;
+    max-width: 100%;
 `
