@@ -94,6 +94,7 @@ export const Robo = styled.img`
 `
 export const CaixaButton = styled.div`
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     margin-top: 2rem;
@@ -104,4 +105,16 @@ export const Microfone = styled.img`
     width: auto;
     height: auto;
     margin-left: 1rem;
+`
+export const StatusMicrofone = styled.p`
+    color: #A1A1AA;
+    font-size: 1rem;
+    margin: 0 1rem 2rem;
+    text-align: center;
+`
+export const LinkDownload = styled.a`
+    color: #FFFFFF;
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    text-underline-offset: 0.25rem;
 `
