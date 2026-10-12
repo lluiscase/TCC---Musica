@@ -35,13 +35,9 @@ for index, file in enumerate(files):
 
     onset_detect = librosa.onset.onset_detect(onset_envelope=onset_env)
 
-    frequency, voiced_flag, voiced_prob = librosa.pyin(
-        y=y_trimmed, sr=sample_rate, fmin=27.5, fmax=4186, frame_length=4096
-    )
-
     onset_strengths = onset_env[onset_detect]
 
-    confidence = onset_strengths / np.max(onset_strengths)
+    confidence = np.clip(onset_strengths / np.percentile(onset_strengths, 95), 0, 1)
 
     clicks = librosa.clicks(frames=onset_detect, length=len(ampl), sr=sample_rate)
 
@@ -55,15 +51,15 @@ for index, file in enumerate(files):
     interval = np.diff(onset_times)
 
     bpm = librosa.feature.tempo(onset_envelope=onset_env, sr=sample_rate)
+    beat = [time * float(bpm[0]) / 60 for time in onset_times]
 
-    print(f"INTERVALO:{interval} FREQUENCIA:{frequency}")
-    print(f"BPM:{bpm}")
+    print(f"BPM:{beat}")
 
     """ Generate the files of audio and json """
 
     events = [
-        {"time": float(time), "confidence": float(conf), "frequency": float(freq)}
-        for time, conf, freq in zip(onset_times, confidence, frequency)
+        {"time": float(time), "confidence": float(conf), "beat":float(beat)}
+        for time, conf, beat in zip(onset_times, confidence, beat)
     ]
     content.append(
         {"execution": index + 1, "audio": file, "BPM": float(bpm[0]), "events": events}
@@ -71,5 +67,5 @@ for index, file in enumerate(files):
 
     display(Audio(data=ampl + clicks, rate=sample_rate))
 
-with open("assets/results/dataset/output.json", "w", encoding="utf-8") as json_file:
+with open("assets/results/dataset/outputUser.json", "w", encoding="utf-8") as json_file:
     json.dump(content, json_file, indent=4)
