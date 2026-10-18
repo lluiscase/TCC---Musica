@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import JSON, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from backend.extensions import db
@@ -12,6 +12,11 @@ COMPLETED = "completed"
 FAILED = "failed"
 
 FINISHED = (COMPLETED, FAILED)
+
+
+def _mean(values):
+    values = [value for value in values if value is not None]
+    return sum(values) / len(values) if values else None
 
 
 class Analysis(db.Model):
@@ -42,15 +47,25 @@ class Analysis(db.Model):
         finished = sum(execution.status in FINISHED for execution in self.executions)
         return round(finished / self.total_executions * 100)
 
-    def to_dict(self):
+    def summary(self):
+        """Row of the analyses table (GET /api/analyses)"""
+        completed = [e for e in self.executions if e.status == COMPLETED]
         return {
             "id": self.id,
             "status": self.status,
             "progress": self.progress,
+            "createdAt": self.created_at.isoformat(timespec="seconds"),
             "totalExecutions": self.total_executions,
-            "completedExecutions": self.completed_executions,
+            "completedExecutions": len(completed),
             "startSecond": self.start_second,
             "endSecond": self.end_second,
+            "averageBPM": _mean([e.bpm for e in completed]),
+            "averageSimilarity": _mean([e.similarity for e in completed]),
+        }
+
+    def to_dict(self):
+        return {
+            **self.summary(),
             "executions": [execution.to_dict() for execution in self.executions],
         }
 
@@ -72,17 +87,23 @@ class Execution(db.Model):
     onset_count: Mapped[Optional[int]]
     average_onset_confidence: Mapped[Optional[float]]
 
-    report_image: Mapped[Optional[str]] = mapped_column(String(255))
+    # Comparison with the reference (processamento.analise_ritmica)
+    reference_onset_count: Mapped[Optional[int]]
+    bpm_difference: Mapped[Optional[float]]
+    euclidean_distance: Mapped[Optional[float]]
+    similarity: Mapped[Optional[float]]
+    shift: Mapped[Optional[int]]
+    evenness: Mapped[Optional[float]]
+    reference_evenness: Mapped[Optional[float]]
+    bars: Mapped[Optional[dict]] = mapped_column(JSON)
+
+    clicks_audio: Mapped[Optional[str]] = mapped_column(String(255))
     error: Mapped[Optional[str]] = mapped_column(Text)
 
     analysis: Mapped[Analysis] = relationship(back_populates="executions")
     onsets: Mapped[list["Onset"]] = relationship(
         back_populates="execution",
         order_by="Onset.time",
-        cascade="all, delete-orphan",
-    )
-    feedback: Mapped[list["Feedback"]] = relationship(
-        back_populates="execution",
         cascade="all, delete-orphan",
     )
 
@@ -107,9 +128,19 @@ class Execution(db.Model):
             }
             if completed
             else None,
-            "feedback": [item.to_dict() for item in self.feedback],
-            "reportImage": f"/api/files/{self.analysis_id}/{self.report_image}"
-            if self.report_image
+            "comparison": {
+                "referenceOnsetCount": self.reference_onset_count,
+                "BPMDifference": self.bpm_difference,
+                "euclideanDistance": self.euclidean_distance,
+                "similarity": self.similarity,
+                "shift": self.shift,
+                "evenness": {"reference": self.reference_evenness, "user": self.evenness},
+                "bars": self.bars,
+            }
+            if completed
+            else None,
+            "clicksAudio": f"/api/files/{self.analysis_id}/{self.clicks_audio}"
+            if self.clicks_audio
             else None,
             "error": self.error,
         }
@@ -122,33 +153,10 @@ class Onset(db.Model):
     execution_id: Mapped[int] = mapped_column(ForeignKey("executions.id"))
     time: Mapped[float]
     confidence: Mapped[float]
-    duration: Mapped[Optional[float]]
-    energy: Mapped[Optional[float]]
-    spectral_centroid: Mapped[Optional[float]]
+    beat: Mapped[Optional[float]]
 
     execution: Mapped[Execution] = relationship(back_populates="onsets")
 
     def to_dict(self):
-        return {
-            "time": self.time,
-            "confidence": self.confidence,
-            "duration": self.duration,
-            "features": {
-                "energy": self.energy,
-                "spectralCentroid": self.spectral_centroid,
-            },
-        }
+        return {"time": self.time, "confidence": self.confidence, "beat": self.beat}
 
-
-class Feedback(db.Model):
-    __tablename__ = "feedback"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    execution_id: Mapped[int] = mapped_column(ForeignKey("executions.id"))
-    type: Mapped[str] = mapped_column(String(20))
-    text: Mapped[str] = mapped_column(Text)
-
-    execution: Mapped[Execution] = relationship(back_populates="feedback")
-
-    def to_dict(self):
-        return {"type": self.type, "text": self.text}

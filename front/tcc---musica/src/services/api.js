@@ -31,3 +31,8 @@ export async function buscarReferencia() {
     const { data } = await api.get('/reference')
     return data.content
 }
+
+export async function buscarModelo() {
+    const { data } = await api.get('/model')
+    return data.content
+}

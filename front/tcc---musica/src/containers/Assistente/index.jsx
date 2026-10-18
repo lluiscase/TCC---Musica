@@ -6,7 +6,9 @@ import { MyButton } from '/components/Button/styles'
 import TabelaExecucoes from '/components/TabelaExecucoes'
 import TabelaAnalises from '/components/TabelaAnalises'
 import Referencia from '/components/Referencia'
-import { enviarAnalise, buscarAnalise, listarAnalises, mensagemErro } from '../../services/api'
+import FeedbackExecucoes from '/components/FeedbackExecucoes'
+import Modelo from '/components/Modelo'
+import { enviarAnalise, buscarAnalise, listarAnalises, buscarModelo, mensagemErro } from '../../services/api'
 import { Icone, Cabecalho, H1, MenuLink, Container, Titulo, Titulo2, Texto, Robo, ContainerRobo, CaixaButton, Microfone, StatusMicrofone, LinkDownload, Secao, TituloSecao, DescricaoSecao, ListaGravacoes, ItemGravacao, BotaoRemover, Trecho, CampoTrecho } from './styles'
 
 const INTERVALO_CONSULTA = 2000
@@ -93,6 +95,8 @@ function Assistente(){
     const [analiseId, setAnaliseId] = useState(null)
     const [analise, setAnalise] = useState(null)
     const [historico, setHistorico] = useState([])
+    const [modelo, setModelo] = useState(null)
+    const [mensagemModelo, setMensagemModelo] = useState('')
     const fluxoMicrofone = useRef(null)
     const gravacaoAtual = useRef(null)
     const componenteAtivo = useRef(true)
@@ -125,6 +129,21 @@ function Assistente(){
             .catch((erro) => setMensagemAnalise(mensagemErro(erro)))
     }, [])
 
+    const carregarModelo = useCallback(async () => {
+        try {
+            const status = await buscarModelo()
+            if (componenteAtivo.current) setModelo(status)
+        } catch (erro) {
+            if (componenteAtivo.current) setMensagemModelo(mensagemErro(erro))
+        }
+    }, [])
+
+    useEffect(() => {
+        buscarModelo()
+            .then(setModelo)
+            .catch((erro) => setMensagemModelo(mensagemErro(erro)))
+    }, [])
+
     // Consulta o back até o worker terminar todas as execuções
     useEffect(() => {
         if (analiseId == null) return
@@ -138,7 +157,11 @@ function Assistente(){
                 if (!ativo) return
                 setAnalise(resultado)
                 carregarHistorico()
-                if (STATUS_FINALIZADOS.includes(resultado.status)) return
+                if (STATUS_FINALIZADOS.includes(resultado.status)) {
+                    // O worker treina o modelo de novo ao terminar a análise
+                    carregarModelo()
+                    return
+                }
                 temporizador = setTimeout(consultar, INTERVALO_CONSULTA)
             } catch (erro) {
                 if (ativo) setMensagemAnalise(mensagemErro(erro))
@@ -151,7 +174,7 @@ function Assistente(){
             ativo = false
             clearTimeout(temporizador)
         }
-    }, [analiseId, carregarHistorico])
+    }, [analiseId, carregarHistorico, carregarModelo])
 
     function removerGravacao(id) {
         const gravacao = gravacoes.find((item) => item.id === id)
@@ -340,8 +363,16 @@ function Assistente(){
                 <Secao>
                     <TituloSecao>Análise #{analise.id} — {analise.progress}%</TituloSecao>
                     <TabelaExecucoes execucoes={analise.executions} />
+                    <TituloSecao>Feedback</TituloSecao>
+                    <FeedbackExecucoes execucoes={analise.executions} />
                 </Secao>
             )}
+
+            <Secao>
+                <TituloSecao>Modelo de feedback</TituloSecao>
+                <DescricaoSecao>O modelo aprende sozinho com as execuções de todos os usuários e é treinado de novo a cada análise concluída.</DescricaoSecao>
+                <Modelo modelo={modelo} mensagem={mensagemModelo} />
+            </Secao>
 
             <Secao>
                 <TituloSecao>Histórico de análises</TituloSecao>

@@ -12,9 +12,13 @@ STEPS_PER_BAR = 16  # 4/4
 MAX_SHIFT = 2  # steps tolerated when aligning reference and user
 
 
-def load_datasets():
+def load_reference():
     with open(DATASET_DIR / "output.json", "r", encoding="utf-8") as json_file:
-        reference = json.load(json_file)
+        return json.load(json_file)
+
+
+def load_datasets():
+    reference = load_reference()
 
     with open(DATASET_DIR / "outputUser.json", "r", encoding="utf-8") as json_file:
         user = json.load(json_file)
@@ -49,6 +53,16 @@ def filter_events(item, factor=MEDIAN_FACTOR):
         "threshold": float(threshold),
         "events": [event for event in events if event["confidence"] >= threshold],
     }
+
+
+def section_reference(reference, start_second=None, end_second=None):
+    """Reference cut to the same section requested for the user"""
+    start = start_second or 0
+    end = end_second if end_second is not None else float("inf")
+    events = [event for event in reference["events"] if start <= event["time"] <= end]
+    if not events:
+        raise ValueError("A referência não tem ataques no trecho selecionado")
+    return filter_events({**reference, "events": events})
 
 
 """ Rhythmic grid """
