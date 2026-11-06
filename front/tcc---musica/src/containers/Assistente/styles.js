@@ -112,9 +112,76 @@ export const StatusMicrofone = styled.p`
     margin: 0 1rem 2rem;
     text-align: center;
 `
+export const Secao = styled.section`
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: 0 1.2rem 3rem;
+`
+export const TituloSecao = styled.h3`
+    color: #FFFFFF;
+    font-size: 1.4rem;
+`
+export const ListaGravacoes = styled.ul`
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    list-style: none;
+`
+export const ItemGravacao = styled.li`
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #242429;
+    border-radius: 0.8rem;
+    color: #A1A1AA;
+
+    a {
+        margin: 0;
+    }
+`
+export const BotaoRemover = styled.button`
+    color: #A1A1AA;
+    background: none;
+    border: 1px solid #242429;
+    border-radius: 1rem;
+    padding: 0.4rem 0.9rem;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        color: #FFFFFF;
+        border-color: #8800FF;
+    }
+`
+export const Trecho = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+`
+export const CampoTrecho = styled.label`
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    color: #A1A1AA;
+
+    input {
+        width: 9rem;
+        padding: 0.5rem 0.75rem;
+        color: #FFFFFF;
+        background-color: #111114;
+        border: 1px solid #242429;
+        border-radius: 0.6rem;
+    }
+`
 export const LinkDownload = styled.a`
     color: #FFFFFF;
     font-size: 1rem;
     margin-bottom: 2rem;
     text-underline-offset: 0.25rem;
+`
+export const DescricaoSecao = styled.p`
+    color: #A1A1AA;
+    font-size: 1.2rem;
 `
