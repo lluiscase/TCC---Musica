@@ -17,7 +17,6 @@ function TabelaExecucoes({ execucoes }) {
                         <th>Similaridade</th>
                         <th>Distância</th>
                         <th>Uniformidade (você / ref.)</th>
-                        <th>Áudio com cliques</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,11 +38,6 @@ function TabelaExecucoes({ execucoes }) {
                                 <td>{porcentagem(comparacao?.similarity)}</td>
                                 <td>{numero(comparacao?.euclideanDistance, 2)}</td>
                                 <td>{comparacao ? `${porcentagem(comparacao.evenness.user)} / ${porcentagem(comparacao.evenness.reference)}` : '—'}</td>
-                                <td>
-                                    {execucao.clicksAudio
-                                        ? <audio controls preload="none" src={execucao.clicksAudio} />
-                                        : execucao.error ?? '—'}
-                                </td>
                             </tr>
                         )
                     })}

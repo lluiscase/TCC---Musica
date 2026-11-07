@@ -3,6 +3,8 @@ from pathlib import Path
 from flask import Flask
 
 from backend.extensions import db
+from backend.references import setup_references
+from backend.schema import upgrade_schema
 from backend.routes import bp
 from backend.worker import start_worker
 
@@ -30,6 +32,8 @@ def create_app(config=None):
 
     with app.app_context():
         db.create_all()
+        upgrade_schema()
+        setup_references()
 
     if app.config["WORKER_ENABLED"]:
         start_worker(app)

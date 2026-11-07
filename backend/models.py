@@ -19,11 +19,47 @@ def _mean(values):
     return sum(values) / len(values) if values else None
 
 
+class Reference(db.Model):
+    """Execution the analyses are compared with: the default one (assets) or recorded/sent by the user"""
+
+    # "references" is a reserved word in SQL
+    __tablename__ = "reference_tracks"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(120))
+    audio_path: Mapped[str] = mapped_column(String(500))
+    duration: Mapped[float]
+    sample_rate: Mapped[int]
+    channels: Mapped[int]
+    bpm: Mapped[float]
+    events: Mapped[list] = mapped_column(JSON)
+    is_default: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
+
+    analyses: Mapped[list["Analysis"]] = relationship(back_populates="reference")
+
+    def source(self):
+        """Same format of assets/results/dataset/output.json, used by processamento.analise_ritmica"""
+        return {"execution": self.id, "audio": self.audio_path, "BPM": self.bpm, "events": self.events}
+
+    def summary(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "isDefault": self.is_default,
+            "createdAt": self.created_at.isoformat(timespec="seconds"),
+            "BPM": self.bpm,
+            "duration": self.duration,
+        }
+
+
 class Analysis(db.Model):
     __tablename__ = "analyses"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     status: Mapped[str] = mapped_column(String(20), default=PENDING)
+    reference_id: Mapped[Optional[int]] = mapped_column(ForeignKey("reference_tracks.id"))
+    reference: Mapped[Optional[Reference]] = relationship(back_populates="analyses")
     total_executions: Mapped[int]
     start_second: Mapped[Optional[float]]
     end_second: Mapped[Optional[float]]
@@ -52,6 +88,7 @@ class Analysis(db.Model):
         completed = [e for e in self.executions if e.status == COMPLETED]
         return {
             "id": self.id,
+            "referenceId": self.reference_id,
             "status": self.status,
             "progress": self.progress,
             "createdAt": self.created_at.isoformat(timespec="seconds"),

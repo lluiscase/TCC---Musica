@@ -83,7 +83,7 @@ export const Container = styled.div`
 `
 export const Titulo = styled.h2`
     color: #8800FF;
-    font-size: 1.3rem;
+    font-size: 2.5rem;
     display: flex;
     justify-content: left;
     margin-top: 2rem;
@@ -91,9 +91,9 @@ export const Titulo = styled.h2`
 `
 export const Titulo2 = styled.h2`
     color: #FFFFFF;
-    font-size: 2.5rem;
+    font-size: 2rem;
     display: flex;
-    justify-content: left;
+    justify-content: center;
     margin-left: 1rem;
     margin-top: 1rem;
 `
@@ -101,7 +101,7 @@ export const Texto = styled.p`
     color: #A1A1AA;
     font-size: 1.2rem;
     display: flex;
-    justify-content: left;
+    justify-content: center;
     margin-left: 1.2rem;
 `
 export const ContainerRobo = styled.div`
@@ -146,8 +146,46 @@ export const Secao = styled.section`
     margin: 0 1.2rem 3rem;
 `
 export const TituloSecao = styled.h3`
+    margin-top: 1.5em;
     color: #FFFFFF;
     font-size: 1.4rem;
+`
+// Título à esquerda e ação à direita, na mesma linha
+export const CabecalhoSecao = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+
+    h3 {
+        margin: 0;
+    }
+`
+export const BotaoSecundario = styled.button`
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    font-size: 1rem;
+    color: #FFFFFF;
+    background: rgba(18, 18, 22, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.2rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+
+    &:hover:not(:disabled) {
+        border-color: #8800FF;
+    }
+
+    &:disabled {
+        color: #A1A1AA;
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
 `
 export const ListaGravacoes = styled.ul`
     display: flex;

@@ -21,7 +21,8 @@ from backend.models import (
     Execution,
     Onset,
 )
-from processamento.analise_ritmica import analyse, filter_events, load_reference, section_reference
+from backend.references import analysis_reference
+from processamento.analise_ritmica import analyse, filter_events
 from processamento.pre_processamento import extrair_onsets
 
 POLL_INTERVAL = 5  # seconds, fallback in case a notification is missed
@@ -106,9 +107,7 @@ def _run(app, analysis_id):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        reference = section_reference(
-            load_reference()[0], analysis.start_second, analysis.end_second
-        )
+        reference = analysis_reference(analysis)
     except Exception as error:
         reference = None
         reference_error = f"{type(error).__name__}: {error}"

@@ -8,7 +8,8 @@ from flask import current_app
 
 from backend.extensions import db
 from backend.models import COMPLETED, Execution
-from processamento.analise_ritmica import filter_events, load_reference, section_reference
+from backend.references import analysis_reference
+from processamento.analise_ritmica import filter_events
 from processamento.feedback import auto_labels, extract_features, load_model, predict, save_model, train
 
 _lock = threading.Lock()
@@ -29,12 +30,8 @@ def current_model():
         return _cache["model"]
 
 
-def _reference(analysis):
-    return section_reference(load_reference()[0], analysis.start_second, analysis.end_second)
-
-
 def execution_features(execution, reference=None):
-    reference = reference or _reference(execution.analysis)
+    reference = reference or analysis_reference(execution.analysis)
     user = filter_events(
         {
             "execution": execution.number,
@@ -48,7 +45,7 @@ def execution_features(execution, reference=None):
 def execution_feedback(execution, model):
     if execution.status != COMPLETED:
         return None
-    reference = _reference(execution.analysis)
+    reference = analysis_reference(execution.analysis)
     return predict(model, execution_features(execution, reference), reference["BPM"])
 
 
